@@ -79,7 +79,11 @@ example (a : ℝ) : a > 0 → b > 0 → a + b > 0 := by {
 /- Now prove the following simple statement in propositional logic.
 Note that `p → q → r` means `p → (q → r)`. -/
 example (p q r : Prop) : (p → q) → (p → q → r) → p → r := by {
-  sorry
+  intro h1 h2 h3
+  apply h2
+  exact h3
+  apply h1
+  exact h3
 }
 
 /- # Equivalences
@@ -190,4 +194,3 @@ equivalences. You learned about tactics:
 * `have`
 * `constructor`
 -/
-

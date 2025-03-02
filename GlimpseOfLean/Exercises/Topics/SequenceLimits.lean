@@ -389,5 +389,48 @@ In the next exercise, you can reuse
  near_cluster : cluster_point u a → ∀ ε > 0, ∀ N, ∃ n ≥ N, |u n - a| ≤ ε
 -/
 
-example (hu : CauchySequence u) (hl : cluster_point u l) : seq_limit u l := by
-  sorry
+example (hu : CauchySequence u) (hl : cluster_point u l) : seq_limit u l := by {
+  unfold cluster_point at *
+  unfold CauchySequence at *
+  unfold seq_limit at *
+  rcases hl with ⟨ φ , ⟨ hφ , hl ⟩ ⟩
+  intro ε hε
+  specialize hu (ε / 2) (by linarith)
+  specialize hl (ε / 2) (by linarith)
+  rcases hu with ⟨  N₁ , hu ⟩
+  rcases hl with ⟨ N₂ , hl ⟩
+  let N := max N₁ N₂
+  use φ N
+  intro n hn
+  have hnN: n >= N := by {
+    calc
+      _ >= φ N := by linarith
+      _ >= _   := by exact id_le_extraction' hφ N
+  }
+  have hnN1: n >= N₁ := by {
+    calc
+      _ >= N   := by linarith
+      _ >= _   := by exact Nat.le_max_left N₁ N₂
+  }
+  have hnN2: n >= N₂ := by {
+    calc
+      _ >= N   := by linarith
+      _ >= _   := by exact Nat.le_max_right N₁ N₂
+  }
+  have h1: |u n - u (φ n)| <= ε / 2 := by {
+    apply hu
+    . linarith
+    . calc
+        _ >= n := by exact id_le_extraction' hφ n
+        _ >= _ := by linarith
+  }
+  have h2: |u (φ n) - l| <= ε / 2 := by {
+    apply hl
+    linarith
+  }
+  calc
+    _ = |u n - u (φ n) + (u (φ n) - l)|    := by ring
+    _ <= |u n - u (φ n)| + |(u (φ n) - l)| := by exact abs_add_le (u n - u (φ n)) (u (φ n) - l)
+    _ <= ε / 2 + ε / 2                     := by linarith
+    _ <= _                                  := by linarith
+}

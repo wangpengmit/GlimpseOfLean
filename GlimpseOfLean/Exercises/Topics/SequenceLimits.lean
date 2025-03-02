@@ -297,12 +297,12 @@ lemma near_cluster :
   use φ (max N N')
   constructor
   {
-    linarith [id_le_extraction' hφ (N ⊔ N') , Nat.le_max_left N N']
-/-     calc
+    calc
       φ (max N N') ≥ max N N' := by {
                                    exact id_le_extraction' hφ (N ⊔ N')
                                  }
-                _ ≥ N         := by exact Nat.le_max_left N N' -/
+                _ ≥ N         := by exact Nat.le_max_left N N'
+/-     linarith [id_le_extraction' hφ (N ⊔ N') , Nat.le_max_left N N'] -/
   }
   {
     apply Hlimit
@@ -351,7 +351,7 @@ lemma cluster_limit (hl : seq_limit u l) (ha : cluster_point u a) : a = l := by 
   calc |a - l|
     _ = |a - u n + (u n - l)| := by ring
     _ ≤ |a - u n| + |u n - l| := by apply abs_add_le
-    _ ≤ ε / 2 + ε / 2         := by linarith
+/-     _ ≤ ε / 2 + ε / 2         := by linarith -/
     _ ≤ ε                     := by linarith
 }
 
@@ -380,7 +380,7 @@ example : (∃ l, seq_limit u l) → CauchySequence u := by {
   calc
     _ = |u p - l + (l - u q)|  := by ring
     _ <= |u p - l| + |l - u q| := by exact abs_add_le (u p - l) (l - u q)
-    _ <= ε / 2 + ε / 2         := by linarith
+/-     _ <= ε / 2 + ε / 2         := by linarith -/
     _ <= _                     := by linarith
 }
 
@@ -431,6 +431,6 @@ example (hu : CauchySequence u) (hl : cluster_point u l) : seq_limit u l := by {
   calc
     _ = |u n - u (φ n) + (u (φ n) - l)|    := by ring
     _ <= |u n - u (φ n)| + |(u (φ n) - l)| := by exact abs_add_le (u n - u (φ n)) (u (φ n) - l)
-    _ <= ε / 2 + ε / 2                     := by linarith
-    _ <= _                                  := by linarith
+/-     _ <= ε / 2 + ε / 2                     := by linarith -/
+    _ <= _                                 := by linarith
 }

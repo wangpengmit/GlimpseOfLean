@@ -112,7 +112,7 @@ example (hu : seq_limit u l) (hv : seq_limit v l') :
   rcases hn with ⟨_hn₁, hn₂⟩
   have fact₁ : |u n - l| ≤ ε/2 := hN₁ n (by linarith)
   have fact₂ : |v n - l'| ≤ ε/2 := hN₂ n (by linarith)
-  
+
   calc
     |(u + v) n - (l + l')| = |u n + v n - (l + l')|   := rfl
     _ = |(u n - l) + (v n - l')|                      := by ring
@@ -222,7 +222,28 @@ def CauchySequence (u : ℕ → ℝ) :=
   ∀ ε > 0, ∃ N, ∀ p q, p ≥ N → q ≥ N → |u p - u q| ≤ ε
 
 example : (∃ l, seq_limit u l) → CauchySequence u := by {
-  sorry
+  rintro ⟨ l , hl ⟩
+  unfold CauchySequence
+  intro ε hε
+  unfold seq_limit at *
+  specialize hl (ε / 2) (by linarith)
+  rcases hl with ⟨ N , hl ⟩
+  use N
+  intro p q hp hq
+  have hlp : |u p - l| ≤ ε / 2 := by {
+    apply hl
+    linarith
+  }
+  have hlq : |l - u q| ≤ ε / 2 := by {
+    rw [abs_sub_comm]
+    apply hl
+    linarith
+  }
+  calc
+    _ = |u p - l + (l - u q)|  := by ring
+    _ <= |u p - l| + |l - u q| := by exact abs_add_le (u p - l) (l - u q)
+    _ <= ε / 2 + ε / 2         := by linarith
+    _ <= _                     := by linarith
 }
 
 /-
@@ -232,4 +253,3 @@ In the next exercise, you can reuse
 
 example (hu : CauchySequence u) (hl : cluster_point u l) : seq_limit u l := by
   sorry
-

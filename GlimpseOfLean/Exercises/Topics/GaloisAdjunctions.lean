@@ -32,12 +32,23 @@ def isInf (s : Set X) (x₀ : X) :=
   ∀ x, x ∈ lowerBounds s ↔ x ≤ x₀
 
 lemma isInf.lowerBound {s : Set X} {x₀ : X} (h : isInf s x₀) : x₀ ∈ lowerBounds s := by {
-  sorry
+  unfold isInf at *
+  rw [h]
 }
 
 /-- A set has at most one infimum. -/
 def isInf.eq {s : Set X} {x₀ x₁ : X} (hx₀ : isInf s x₀) (hx₁ : isInf s x₁) : x₀ = x₁ := by {
-  sorry
+  apply le_antisymm
+  {
+    rw [← hx₁ ]
+    apply isInf.lowerBound
+    tauto
+  }
+  {
+    rw [← hx₀ ]
+    apply isInf.lowerBound
+    tauto
+  }
 }
 
 /-- An element `x₀` is an supremum of a set `s` in `X` if every element
@@ -72,7 +83,42 @@ def isSupFun (S : Set X → X) :=
 infimum function then it automatically admits a supremum function. -/
 
 lemma isSup_of_isInf {I : Set X → X} (h : isInfFun I) : isSupFun (fun s ↦ I (upperBounds s)) := by {
-  sorry
+  unfold isSupFun at *
+  intro s
+  unfold isInfFun at *
+  simp
+  unfold isInf at *
+  unfold isSup at *
+  intro x
+  constructor
+  {
+    intro hx
+    have h1: I (upperBounds s) ∈ lowerBounds (upperBounds s) := by {
+      rw [h]
+    }
+    unfold lowerBounds at h1
+    simp at h1
+    apply h1
+    tauto
+  }
+  {
+    intro hx
+    unfold upperBounds
+    simp
+    intro a ha
+    calc a
+      _ <= I (upperBounds s) := by {
+        rw [← h]
+        unfold upperBounds
+        unfold lowerBounds
+        simp
+        intro b hb
+        apply hb
+        tauto
+/-         exact fun ⦃a_1⦄ a_2 ↦ a_2 ha -/
+      }
+      _ <= _ := by tauto
+  }
 }
 
 /- Of course we also have the dual result constructing an infimum function from
@@ -145,7 +191,17 @@ or reprove it as part of your proof.
 -/
 
 lemma Inf_subset {s t : Set X} (h : s ⊆ t): Inf t ≤ Inf s := by {
-  sorry
+/-   have ht: isInf t (Inf t) := by {
+    apply CompleteLattice.I_isInf
+  } -/
+  have hs: isInf s (Inf s) := by {
+    apply CompleteLattice.I_isInf
+  }
+  unfold isInf at *
+  rw [← hs]
+  apply lowerBounds_mono_set at h
+  apply h
+  exact lowerBound_Inf t
 }
 
 lemma Sup_subset {s t : Set X} (h : s ⊆ t): Sup s ≤ Sup t :=
@@ -519,4 +575,3 @@ lemma push_generate (f : G →* G') : push f ∘ generate = generate ∘ (Set.im
 
 end Subgroups
 end Tutorial
-

@@ -208,7 +208,31 @@ lemma Sup_subset {s t : Set X} (h : s ⊆ t): Sup s ≤ Sup t :=
   Inf_subset (X := OrderDual X) h
 
 lemma Inf_pair {x x' : X} : x ≤ x' ↔ Inf {x, x'} = x := by {
-  sorry
+  let s: Set X := {x, x'}
+  have hs: isInf s (Inf s) := by {
+    apply CompleteLattice.I_isInf
+  }
+  unfold isInf at *
+  constructor
+  {
+    intro h
+    apply le_antisymm
+    {
+      apply lowerBound_Inf
+      simp
+    }
+    {
+      rw [← hs]
+      simp [s]
+      assumption
+    }
+  }
+  {
+    intro h
+    rw [← h]
+    apply lowerBound_Inf
+    simp
+  }
 }
 
 lemma Sup_pair {x x' : X} : x ≤ x' ↔ Sup {x, x'} = x' := by {

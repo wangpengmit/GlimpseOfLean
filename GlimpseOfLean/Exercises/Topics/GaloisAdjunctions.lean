@@ -93,13 +93,15 @@ lemma isSup_of_isInf {I : Set X → X} (h : isInfFun I) : isSupFun (fun s ↦ I 
   constructor
   {
     intro hx
-    have h1: I (upperBounds s) ∈ lowerBounds (upperBounds s) := by {
-      rw [h]
-    }
-    unfold lowerBounds at h1
-    simp at h1
-    apply h1
-    tauto
+    apply isInf.lowerBound (h _)
+    assumption
+    -- have h1: I (upperBounds s) ∈ lowerBounds (upperBounds s) := by {
+    --   rw [h]
+    -- }
+    -- unfold lowerBounds at h1
+    -- simp at h1
+    -- apply h1
+    -- tauto
   }
   {
     intro hx

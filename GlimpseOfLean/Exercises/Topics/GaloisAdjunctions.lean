@@ -193,9 +193,9 @@ or reprove it as part of your proof.
 -/
 
 lemma Inf_subset {s t : Set X} (h : s ⊆ t): Inf t ≤ Inf s := by {
-/-   have ht: isInf t (Inf t) := by {
-    apply CompleteLattice.I_isInf
-  } -/
+  -- have ht: isInf t (Inf t) := by {
+  --   apply CompleteLattice.I_isInf
+  -- }
   have hs: isInf s (Inf s) := by {
     apply CompleteLattice.I_isInf
   }
@@ -243,7 +243,22 @@ lemma Sup_pair {x x' : X} : x ≤ x' ↔ Sup {x, x'} = x' := by {
 }
 
 lemma Inf_self_le (x : X) : Inf {x' | x ≤ x'} = x := by {
-  sorry
+  let s: Set X := {x' | x <= x'}
+  have hs: isInf s (Inf s) := by {
+    apply CompleteLattice.I_isInf
+  }
+  unfold isInf at *
+  apply le_antisymm
+  {
+    apply lowerBound_Inf
+    simp
+  }
+  {
+    rw [← hs]
+    simp [s]
+    unfold lowerBounds
+    simp
+  }
 }
 
 lemma Sup_le_self (x : X) : Sup {x' | x' ≤ x} = x :=
@@ -252,11 +267,35 @@ lemma Sup_le_self (x : X) : Sup {x' | x' ≤ x} = x :=
 /- Let us prove that `Set` forms a complete lattice. -/
 
 lemma isInfInter {Y : Type} (S : Set (Set Y)) : isInf S (⋂₀ S) := by {
-  sorry
+  unfold isInf
+  intro s
+  constructor
+  {
+    intro h
+    apply Set.subset_sInter
+    exact h
+  }
+  {
+    intro h
+    apply Set.subset_sInter_iff.1 at h
+    exact h
+  }
 }
 
 lemma isSupUnion {Y : Type} (S : Set (Set Y)) : isSup S (⋃₀ S) := by {
-  sorry
+  unfold isSup
+  intro s
+  constructor
+  {
+    intro h
+    apply Set.sUnion_subset
+    exact h
+  }
+  {
+    intro h
+    apply Set.sUnion_subset_iff.1 at h
+    exact h
+  }
 }
 
 instance {Y : Type} : CompleteLattice (Set Y) where
@@ -292,7 +331,10 @@ lemma image_preimage_adjunction {α β : Type} (f : α → β) :
 lemma adjunction.dual [PartialOrder X] [PartialOrder Y] {l : X → Y} {r : Y → X}
     (h : adjunction l r) :
     adjunction (X := OrderDual Y) (Y := OrderDual X) r l := by {
-  sorry
+  unfold adjunction at *
+  intro x y
+  symm
+  apply h
 }
 
 /- In this remaining of the section, `X` and `Y` are complete lattices. -/
@@ -327,7 +369,59 @@ the other direction, you should probably first prove that `Monotone l`, ie
 
 theorem adjunction_of_Sup {l : X → Y} (h : ∀ s : Set X, l (Sup s) = Sup (l '' s)) :
     adjunction l (mk_right l) := by {
-  sorry
+  unfold adjunction
+  unfold mk_right
+  intro x y
+  have hm: forall a b, a <= b -> l a <= l b := by {
+    intro a b hab
+    calc
+      _ <= Sup {l a , l b} := by {
+        apply upperBound_Sup
+        simp
+      }
+      _ = l (Sup {a , b}) := by {
+        rw [h]
+        congr
+        exact Eq.symm (Set.image_pair l a b)
+      }
+      _ <= _             := by {
+        rw [Sup_pair.1 hab]
+      }
+  }
+  constructor
+  {
+    intro h'
+    calc
+      _ <= Sup {x} := by {
+        apply upperBound_Sup
+        simp
+      }
+      _ <= _       := by {
+        apply Sup_subset
+        simp
+        assumption
+      }
+  }
+  {
+    intro h'
+    let s := {x | l x ≤ y}
+    calc
+      _ <= l (Sup s) := by {
+        apply hm
+        assumption
+      }
+      _ = Sup (l '' s) := by {
+        apply h
+      }
+      _ <= Sup {y' | y' <= y} := by {
+        simp [s]
+        apply Sup_subset
+        simp
+      }
+      _ = _ := by {
+        apply Sup_le_self
+      }
+  }
 }
 
 /- Of course we can play the same game to construct left adjoints. -/

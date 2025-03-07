@@ -522,10 +522,15 @@ theorem.
 def push (f : X → Y) (T : Topology X) : Topology Y where
   isOpen := fun V ↦ T.isOpen (f ⁻¹' V)
   isOpen_iUnion := by {
-    sorry
+    intro i s h
+    simp at h
+    rw [@Set.preimage_iUnion]
+    apply T.isOpen_iUnion h
   }
   isOpen_iInter := by {
-    sorry
+    intro i s h hf
+    rw [@Set.preimage_iInter]
+    apply T.isOpen_iInter h hf
 }
 
 postfix:1024 "⁎" => push -- type using `\_*`
@@ -556,7 +561,11 @@ where "ball" stands for "bounded for all", ie `∀ x ∈ ...`.
 -/
 
 lemma push_Sup (f : X → Y) {t : Set (Topology X)} : f ⁎ (Sup t) = Sup (f ⁎ '' t) := by {
-  sorry
+  ext Ys
+  unfold push
+  simp
+  rw [isOpen_Sup, isOpen_Sup]
+  simp
 }
 
 def pull (f : X → Y) (T : Topology Y) : Topology X := mk_right (push f) T
@@ -566,10 +575,46 @@ postfix:1024 "^*" => pull
 def ProductTopology {ι : Type} {X : ι → Type} (T : Π i, Topology (X i)) : Topology (Π i, X i) :=
 Inf (Set.range (fun i ↦ (fun x ↦ x i) ^* (T i)))
 
+lemma Continuous_iff (T : Topology X) (T' : Topology Y) (f : X → Y) :
+  Continuous T T' f ↔ ∀ V, T'.isOpen V → T.isOpen (f ⁻¹' V) :=
+Iff.rfl
+
 lemma ContinuousProductTopIff {ι : Type} {X : ι → Type} (T : Π i, Topology (X i))
   {Z : Type} (TZ : Topology Z) {f : Z → Π i, X i}:
     Continuous TZ (ProductTopology T) f ↔ ∀ i,  Continuous TZ (T i) (fun z ↦ f z i) := by {
-  sorry
+  -- rw [Continuous_iff]
+  unfold ProductTopology
+  constructor
+  {
+    intro h i
+    rw [Continuous_iff]
+    intro Xis hXis
+    rw [Continuous_iff] at h
+    have heq : (fun z ↦ f z i) ⁻¹' Xis = f ⁻¹' {v : (Π (i : ι), X i) | v i ∈ Xis} := by {
+      ext z
+      simp
+    }
+    rw [heq]
+    apply h
+    unfold pull at *
+    -- here
+
+    unfold mk_of_Sup
+
+    unfold mk_right at *
+
+    unfold push
+
+    apply hXis
+    simp
+    rw [isOpen_Sup] at h
+
+    simp at *
+    simp
+    unfold Continuous
+
+    simp
+  }
 }
 
 end Topology

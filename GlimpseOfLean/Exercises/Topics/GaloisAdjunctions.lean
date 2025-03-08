@@ -590,18 +590,48 @@ lemma ContinuousProductTopIff {ι : Type} {X : ι → Type} (T : Π i, Topology 
     rw [Continuous_iff]
     intro Xis hXis
     rw [Continuous_iff] at h
-    have heq : (fun z ↦ f z i) ⁻¹' Xis = f ⁻¹' {v : (Π (i : ι), X i) | v i ∈ Xis} := by {
+    have heq : (fun z ↦ f z i) ⁻¹' Xis = f ⁻¹' {x : (Π (i : ι), X i) | x i ∈ Xis} := by {
       ext z
       simp
     }
     rw [heq]
     apply h
+    let Ts : Set (Topology (Π (i : ι), X i)) := Set.range fun i ↦ (fun x ↦ x i)^* (T i)
     unfold pull at *
+    have hle: Inf Ts <= (fun x ↦ x i)^* (T i) := by {
+      apply lowerBound_Inf
+      exact Set.mem_range_self i
+    }
+    unfold pull at *
+    apply hle
+    unfold mk_right at *
+    apply isOpen_Sup.2
+    intro PT hPT
+    simp at *
+    apply hPT at hXis
+    simp at *
+    unfold push at hXis
+    simp at hXis
+    have h_not_necessary: (fun (x : Π i, X i) ↦ x i) ⁻¹' Xis = {x | x i ∈ Xis} := by {
+      rfl
+    }
+    -- -- rw [h_not_necessary] at hXis
+    -- rw [← h_not_necessary]
+    exact hXis
+  }
+  {
+
     -- here
+
+    rw [isOpen_Sup]
+    have hle2: mk_right (fun x ↦ x i)⁎ (T i) <=
+    unfold Membership.mem
+    simp
+
+    simp
 
     unfold mk_of_Sup
 
-    unfold mk_right at *
 
     unfold push
 

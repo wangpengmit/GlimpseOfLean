@@ -582,10 +582,39 @@ Iff.rfl
 lemma ContinuousProductTopIff {ι : Type} {X : ι → Type} (T : Π i, Topology (X i))
   {Z : Type} (TZ : Topology Z) {f : Z → Π i, X i}:
     Continuous TZ (ProductTopology T) f ↔ ∀ i,  Continuous TZ (T i) (fun z ↦ f z i) := by {
+  -- calc
+  --   Continuous TZ (ProductTopology T) f
+  --   _ ↔ f ⁎ TZ ∈ lowerBounds (Set.range (fun i ↦ (fun x ↦ x i) ^* (T i))) := by {
+  --         rw [CompleteLattice.I_isInf]
+  --         exact Iff.rfl
+  --         }
+  --   _ ↔ ∀ i, f ⁎ TZ ≤ (fun x ↦ x i) ^* (T i)        := by rw [lowerBounds_range]
+  --   _ ↔ ∀ i, (fun x ↦ x i) ⁎ (f ⁎ TZ) ≤ T i        := by {
+  --         apply forall_congr'
+  --         intro i
+  --         -- rw [pull, ← adjunction_of_Sup (fun s ↦ push_Sup _), push_push]
+  --         rw [pull, ← adjunction_of_Sup (fun s ↦ push_Sup _)]
+  --         }
+  --   _ ↔ ∀ i,  Continuous TZ (T i) (fun z ↦ f z i)  := Iff.rfl
+
+  -- unfold Continuous ProductTopology
+  -- rw [← CompleteLattice.I_isInf, lowerBounds_range]
+  -- apply forall_congr'
+  -- intro i
+  -- unfold pull
+  -- -- rw [← adjunction_of_Sup (fun s ↦ push_Sup _), push_push]
+  -- rw [← adjunction_of_Sup (fun s ↦ push_Sup _)]
+  -- rfl
+
   -- rw [Continuous_iff]
-  unfold ProductTopology
+  -- have heq : forall i (Xis : Set (X i)), (fun z ↦ f z i) ⁻¹' Xis = f ⁻¹' {x : (Π (i : ι), X i) | x i ∈ Xis} := by {
+  --   intro Xis i
+  --   ext z
+  --   simp
+  -- }
   constructor
   {
+    unfold ProductTopology
     intro h i
     rw [Continuous_iff]
     intro Xis hXis
@@ -620,30 +649,78 @@ lemma ContinuousProductTopIff {ι : Type} {X : ι → Type} (T : Π i, Topology 
     exact hXis
   }
   {
+    -- intro h
+    -- unfold ProductTopology
+    -- unfold Continuous
+    -- rw [← CompleteLattice.I_isInf]
+    -- rw [lowerBounds_range]
+    -- intro i
+    -- unfold pull
+    -- rw [← adjunction_of_Sup (by {
+    --   apply push_Sup
+    -- })]
+    -- unfold Continuous at h
+    -- apply h
 
-    -- here
+    intro h
+    unfold ProductTopology
+    rw [Continuous_iff]
+    intro tuples h_tuples
+    -- rw [Continuous_iff] at h
+    have h2: forall i V, (T i).isOpen V -> TZ.isOpen ((fun z ↦ f z i) ⁻¹' V) := by {
+      exact h
+    }
+    have h3: forall i, (fun x ↦ x i)⁎ (f⁎ TZ) ≤ T i := by {
+      -- exact h
+      exact h2
+    }
+    -- rw [push_push] at h_key
+    -- rw [adjunction_of_Sup] at h_key
+    have h4_key: forall i, (f⁎ TZ) <= mk_right (fun x ↦ x i)⁎ (T i) := by {
+      intro i
+      -- This is fundamentally how you prove `TZ.isOpen (f ⁻¹' tuples)`.
+      rw [<- adjunction_of_Sup (by {
+        apply push_Sup
+      })]
+      apply h3
+    }
+    have h5: (f⁎ TZ) <= Inf (Set.range fun i ↦ mk_right (fun x ↦ x i)⁎ (T i)) := by {
+      rw [← CompleteLattice.I_isInf]
+      rw [lowerBounds_range]
+      exact h4_key
+    }
+    apply h5  -- This is how you prove `TZ.isOpen (f ⁻¹' tuples)`.
+    exact h_tuples
 
-    rw [isOpen_Sup]
-    have hle2: mk_right (fun x ↦ x i)⁎ (T i) <=
-    unfold Membership.mem
-    simp
+  --   unfold Continuous at h
 
-    simp
+  --   have heq: f ⁻¹' tuples = ⋂ i, (fun z ↦ f z i) ⁻¹' (tuples i) := by {
+  --   }
+  --   let Ts : Set (Topology (Π (i : ι), X i)) := Set.range fun i ↦ (fun x ↦ x i)^* (T i)
 
-    unfold mk_of_Sup
+  --   }
+  --   apply h'
+  --   rw [isOpen_Sup]
+  --   have hle2: mk_right (fun x ↦ x i)⁎ (T i) <=
+  --   unfold Membership.mem
+  --   simp
+
+  --   simp
+
+  --   unfold mk_of_Sup
 
 
-    unfold push
+  --   unfold push
 
-    apply hXis
-    simp
-    rw [isOpen_Sup] at h
+  --   apply hXis
+  --   simp
+  --   rw [isOpen_Sup] at h
 
-    simp at *
-    simp
-    unfold Continuous
+  --   simp at *
+  --   simp
+  --   unfold Continuous
 
-    simp
+  --   simp
   }
 }
 

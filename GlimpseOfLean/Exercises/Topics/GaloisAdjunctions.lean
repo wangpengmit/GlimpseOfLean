@@ -747,13 +747,36 @@ instance : PartialOrder (Subgroup G) :=
 def SubgroupInf (s : Set (Subgroup G)) : Subgroup G where
   carrier := ⋂ H ∈ s, H.carrier
   one_mem := by {
-    sorry
+    rw [Set.mem_iInter₂]
+    -- apply Set.mem_iInter₂_of_mem
+    intro i hi
+    apply Subgroup.one_mem
   }
   mul_mem := by {
-    sorry
+    intro x y hx hy
+    rw [Set.mem_iInter₂]
+    -- apply Set.mem_iInter₂_of_mem
+    intro i hi
+    apply Subgroup.mul_mem
+    {
+      rw [Set.mem_iInter₂] at hx
+      apply hx
+      apply hi
+    }
+    {
+      rw [Set.mem_iInter₂] at hy
+      apply hy
+      apply hi
+    }
   }
   inv_mem := by {
-    sorry
+    intro x hx
+    rw [Set.mem_iInter₂]
+    intro i hi
+    apply Subgroup.inv_mem
+    rw [Set.mem_iInter₂] at hx
+    apply hx
+    apply hi
   }
 
 lemma SubgroupInf_carrier (s : Set (Subgroup G)) :
@@ -761,7 +784,31 @@ lemma SubgroupInf_carrier (s : Set (Subgroup G)) :
 by simp [SubgroupInf]
 
 lemma SubgroupInf_is_Inf : isInfFun (SubgroupInf : Set (Subgroup G) → Subgroup G) := by {
-  sorry
+  unfold isInfFun
+  intro s
+  unfold isInf
+  intro x
+  symm
+  apply Set.subset_iInter₂_iff
+
+  -- constructor
+  -- {
+  --   intro h
+  --   -- unfold SubgroupInf
+  --   -- have goal: x.carrier ⊆ ⋂ H ∈ s, H.carrier := by {
+  --   --   exact Set.subset_iInter₂ h
+  --   -- }
+  --   -- apply goal
+
+  --   -- exact Set.subset_iInter₂ h
+  --   apply Set.subset_iInter₂_iff.2
+  --   apply h
+  -- }
+  -- {
+  --   intro h
+  --   apply Set.subset_iInter₂_iff.1
+  --   apply h
+  -- }
 }
 
 instance : CompleteLattice (Subgroup G) := CompleteLattice.mk_of_Inf SubgroupInf_is_Inf
